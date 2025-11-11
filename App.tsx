@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnalysisResultData } from './types';
@@ -10,6 +11,9 @@ import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
 
 type Theme = 'light' | 'dark';
+
+// The AIStudio interface and window.aistudio declaration are removed
+// as the application will no longer manage API key selection via the platform API.
 
 const Header: React.FC<{ theme: Theme, onThemeChange: (theme: Theme) => void }> = ({ theme, onThemeChange }) => {
     const { t } = useTranslation();
@@ -38,6 +42,10 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'dark');
+  // Removed API key selection state variables
+  // const [hasApiKeySelected, setHasApiKeySelected] = useState<boolean>(false);
+  // const [showApiKeySelectionPrompt, setShowApiKeySelectionPrompt] = useState<boolean>(false);
+
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -50,6 +58,23 @@ function App() {
       document.documentElement.lang = i18n.language;
       document.documentElement.dir = i18n.dir(i18n.language);
   }, [i18n, i18n.language]);
+
+  // Removed API key check on mount: The application assumes process.env.API_KEY is available.
+  /*
+  useEffect(() => {
+    const checkApiKey = async () => {
+      if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
+        const selected = await window.aistudio.hasSelectedApiKey();
+        setHasApiKeySelected(selected);
+      } else {
+        // Fallback or error handling if aistudio API is not available
+        console.warn('window.aistudio.hasSelectedApiKey is not available.');
+        setHasApiKeySelected(true); // Assume API key is not managed by aistudio, proceed as if it's set via env
+      }
+    };
+    checkApiKey();
+  }, []);
+  */
 
   useEffect(() => {
     try {
@@ -83,6 +108,14 @@ function App() {
         return;
       }
 
+      // Removed API key check for translation
+      /*
+      if (!hasApiKeySelected) {
+        setShowApiKeySelectionPrompt(true);
+        return;
+      }
+      */
+
       setIsLoading(true);
       setError(null);
 
@@ -113,6 +146,16 @@ function App() {
         );
 
       } catch (err: any) {
+        // Removed API key specific error handling for translation
+        /*
+        if (err.message && err.message.includes("Requested entity was not found.")) {
+          setHasApiKeySelected(false);
+          setShowApiKeySelectionPrompt(true);
+          setError(i18n.t('analysisFailedTitle') + ": " + i18n.t('apiKeyRequiredMessage')); // Use specific message
+        } else {
+          setError(err.message || 'An unknown error occurred during translation.');
+        }
+        */
         setError(err.message || 'An unknown error occurred during translation.');
       } finally {
         setIsLoading(false);
@@ -121,7 +164,7 @@ function App() {
 
     translateAnalysisIfNeeded();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [i18n.language, currentAnalysis]);
+  }, [i18n.language, currentAnalysis]); // Removed hasApiKeySelected from dependencies
 
   const handleImageSelect = useCallback((imageData: { base64: string; mimeType: string }) => {
     setCurrentImage({ ...imageData, dataUrl: `data:${imageData.mimeType};base64,${imageData.base64}` });
@@ -131,6 +174,14 @@ function App() {
 
   const handleAnalyzeClick = async () => {
     if (!currentImage) return;
+
+    // Removed API key check before proceeding with analysis
+    /*
+    if (!hasApiKeySelected) {
+      setShowApiKeySelectionPrompt(true);
+      return;
+    }
+    */
 
     setIsLoading(true);
     setError(null);
@@ -148,6 +199,16 @@ function App() {
       setCurrentAnalysis(newAnalysis);
       setAnalyses(prev => [newAnalysis, ...prev]);
     } catch (err: any) {
+      // Removed API key specific error handling
+      /*
+      if (err.message && err.message.includes("Requested entity was not found.")) {
+        setHasApiKeySelected(false);
+        setShowApiKeySelectionPrompt(true);
+        setError(i18n.t('analysisFailedTitle') + ": " + i18n.t('apiKeyRequiredMessage')); // Use specific message
+      } else {
+        setError(err.message || 'An unknown error occurred during analysis.');
+      }
+      */
       setError(err.message || 'An unknown error occurred during analysis.');
     } finally {
       setIsLoading(false);
@@ -165,6 +226,22 @@ function App() {
     setCurrentImage(null); 
     setError(null);
   }, []);
+
+  // Removed API key selection handler
+  /*
+  const handleOpenApiKeySelection = async () => {
+    if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
+      await window.aistudio.openSelectKey();
+      // Optimistically assume key selection was successful
+      setHasApiKeySelected(true);
+      setShowApiKeySelectionPrompt(false);
+      setError(null); // Clear any previous API key related error
+    } else {
+      console.error('window.aistudio.openSelectKey is not available.');
+      alert('API key selection functionality is not available in this environment.');
+    }
+  };
+  */
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300">
@@ -201,6 +278,15 @@ function App() {
 
         </div>
       </main>
+      {/* Removed API key selection prompt component */}
+      {/*
+      {showApiKeySelectionPrompt && (
+        <ApiKeySelectionPrompt
+          onSelectKey={handleOpenApiKeySelection}
+          onClose={() => setShowApiKeySelectionPrompt(false)}
+        />
+      )}
+      */}
     </div>
   );
 }

@@ -1,8 +1,14 @@
 
+
+export interface SuggestedProduct {
+  name: string;
+  activeIngredient: string;
+}
+
 export interface Treatment {
   type: 'Chemical' | 'Biological';
   description: string;
-  suggestedProducts?: string[];
+  suggestedProducts?: SuggestedProduct[];
 }
 
 export interface AnalysisResultData {
