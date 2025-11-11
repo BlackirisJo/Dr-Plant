@@ -1,0 +1,7 @@
+{
+  "name": "طبيب النباتات",
+  "description": "An application to diagnose plant diseases by analyzing images using AI. It provides treatment suggestions tailored to the Jordanian market and keeps a history of analyses.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
